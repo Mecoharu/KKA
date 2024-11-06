@@ -25,30 +25,43 @@ class GridWorld:
 def generate_random_route(grid_world):
     path = []
     current_position = grid_world.start
+    visited = set([current_position])
     move_count = 0
     max_moves = len(grid_world.grid) * len(grid_world.grid[0])  # Avoid infinite loops
 
     while current_position != grid_world.goal and move_count < max_moves:
         possible_moves = ['U', 'D', 'L', 'R']
         random.shuffle(possible_moves)
+        
+        move_made = False
         for move in possible_moves:
             new_position = grid_world.move(current_position, move)
-            if new_position != current_position:
+            if new_position != current_position and new_position not in visited:
                 path.append(move)
                 current_position = new_position
+                visited.add(current_position)
+                move_made = True
                 break
+        
+        if not move_made:
+            new_position = grid_world.move(current_position, possible_moves[0])
+            path.append(possible_moves[0])
+            current_position = new_position
+            visited.add(current_position)
+
         move_count += 1
 
     return path, current_position
 
 def fitness(grid_world, path):
     current_position = grid_world.start
+    visited = set([current_position])
     for move in path:
         current_position = grid_world.move(current_position, move)
         if current_position == grid_world.goal:
             return len(path)  # Reward shorter paths
-    # Penalize based on Manhattan distance to goal and length of the path
-    return len(path) + abs(current_position[0] - grid_world.goal[0]) + abs(current_position[1] - grid_world.goal[1])
+        visited.add(current_position)
+    return len(path) + 2 * len(visited) + abs(current_position[0] - grid_world.goal[0]) + abs(current_position[1] - grid_world.goal[1])
 
 def crossover(parent1, parent2):
     crossover_point = random.randint(1, min(len(parent1), len(parent2)) - 1)
@@ -86,16 +99,18 @@ def genetic_algorithm(grid_world, population_size=50, generations=500):
         best_path = population[0]
 
     position = grid_world.start
-    visited_positions = [position]
+    fixed_path_positions = [position]
     for move in best_path:
-        position = grid_world.move(position, move)
-        visited_positions.append(position)
+        new_position = grid_world.move(position, move)
+        if new_position != position:
+            fixed_path_positions.append(new_position)
+        position = new_position
 
-    return best_path, visited_positions
+    return best_path, fixed_path_positions
 
-def print_grid(grid_world, visited_positions):
+def print_grid(grid_world, fixed_path_positions):
     grid_copy = [row[:] for row in grid_world.grid]
-    for pos in visited_positions:
+    for pos in fixed_path_positions:
         x, y = pos
         if grid_copy[x][y] not in ['S', 'G', '#']:  
             grid_copy[x][y] = 'X'
@@ -103,6 +118,7 @@ def print_grid(grid_world, visited_positions):
     for row in grid_copy:
         print(' '.join(str(cell) for cell in row))
 
+# Example usage
 grid = [
     ['S', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0'],
     ['#', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0'],
@@ -130,9 +146,9 @@ start = (0, 0)
 goal = (19, 19)
 
 grid_world = GridWorld(grid, start, goal)
-best_path, visited_positions = genetic_algorithm(grid_world)
+best_path, fixed_path_positions = genetic_algorithm(grid_world)
 
 print("Best path in moves:", best_path)
-print("Visited positions:", visited_positions)
-print("Final grid with visited positions:")
-print_grid(grid_world, visited_positions)
+print("Fixed path positions:", fixed_path_positions)
+print("Final grid with fixed path positions:")
+print_grid(grid_world, fixed_path_positions)
