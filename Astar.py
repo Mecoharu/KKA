@@ -24,7 +24,7 @@ class GridWorld:
         return neighbors
 
     def heuristic(self, position):
-        # Heuristic (Manhattan distance) for A*
+        # Heuristic for A*
         x, y = position
         gx, gy = self.goal
         return abs(x - gx) + abs(y - gy)
