@@ -1,6 +1,5 @@
 import heapq
-
-# A* algorithm to find the shortest path in a grid world
+# A* algorithm to find the shortest path in a grid world with points
 
 class GridWorld:
     def __init__(self, grid, start, goal):
@@ -10,50 +9,64 @@ class GridWorld:
 
     def is_valid_move(self, position):
         x, y = position
+        # Ensure position is within bounds and not a wall ('#')
         return 0 <= x < len(self.grid) and 0 <= y < len(self.grid[0]) and self.grid[x][y] != '#'
 
     def get_neighbors(self, position):
+        # Possible moves: right, down, left, up
         x, y = position
-        neighbors = [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
-        return [n for n in neighbors if self.is_valid_move(n)]
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        neighbors = []
+        for dx, dy in directions:
+            new_position = (x + dx, y + dy)
+            if self.is_valid_move(new_position):
+                neighbors.append(new_position)
+        return neighbors
 
     def heuristic(self, position):
-        # Manhattan distance heuristic for A*
-        return abs(position[0] - self.goal[0]) + abs(position[1] - self.goal[1])
+        # Heuristic (Manhattan distance) for A*
+        x, y = position
+        gx, gy = self.goal
+        return abs(x - gx) + abs(y - gy)
 
-def a_star(grid_world):
-    start = grid_world.start
-    goal = grid_world.goal
+    def get_points(self, position):
+        x, y = position
+        # Get numeric point value if the cell contains a number, else return 0
+        return int(self.grid[x][y]) if self.grid[x][y].isdigit() else 0
 
+def a_star(grid_world, minimize_points=False):
     open_set = []
-    heapq.heappush(open_set, (0, start))
-    came_from = {start: None}
-    g_score = {start: 0}
-    f_score = {start: grid_world.heuristic(start)}
+    heapq.heappush(open_set, (0, grid_world.start))
+    came_from = {}
+    g_score = {grid_world.start: 0}
+    f_score = {grid_world.start: grid_world.heuristic(grid_world.start)}
 
     while open_set:
         _, current = heapq.heappop(open_set)
 
-        if current == goal:
-            # Reconstruct path from goal to start
-            path = []
-            while current:
-                path.append(current)
-                current = came_from[current]
-            path.reverse()
-            return path
+        if current == grid_world.goal:
+            return reconstruct_path(came_from, current)
 
         for neighbor in grid_world.get_neighbors(current):
-            tentative_g_score = g_score[current] + 1  # Each move costs 1
+            # Use points for cost if minimizing points, else use a constant cost of 1
+            point_cost = grid_world.get_points(neighbor) if minimize_points else 1
+            tentative_g_score = g_score[current] + point_cost
 
-            if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+            if tentative_g_score < g_score.get(neighbor, float('inf')):
                 came_from[neighbor] = current
                 g_score[neighbor] = tentative_g_score
                 f_score[neighbor] = tentative_g_score + grid_world.heuristic(neighbor)
-                if neighbor not in [i[1] for i in open_set]:
-                    heapq.heappush(open_set, (f_score[neighbor], neighbor))
+                heapq.heappush(open_set, (f_score[neighbor], neighbor))
 
     return None  # No path found
+
+def reconstruct_path(came_from, current):
+    path = []
+    while current in came_from:
+        path.append(current)
+        current = came_from[current]
+    path.reverse()
+    return path
 
 def print_grid(grid_world, path):
     grid_copy = [row[:] for row in grid_world.grid]
@@ -61,44 +74,41 @@ def print_grid(grid_world, path):
         x, y = pos
         if grid_copy[x][y] not in ['S', 'G', '#']:
             grid_copy[x][y] = 'X'
-
     for row in grid_copy:
         print(' '.join(str(cell) for cell in row))
 
-# Example usage
+# Example Full grid with start (S), goal (G), walls (#), and points
 grid = [
-    ['S', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0'],
-    ['#', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0'],
-    ['0', '0', '0', '0', '0', '0', '#', '0', '#', '0', '0', '0', '0', '0', '#', '0', '0', '0', '#', '0'],
-    ['#', '#', '0', '0', '0', '0', '0', '#', '#', '0', '0', '0', '#', '#', '0', '0', '0', '0', '0', '0'],
-    ['0', '0', '0', '0', '0', '0', '0', '#', '0', '#', '0', '0', '0', '0', '0', '#', '0', '#', '0', '0'],
-    ['0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '#', '0', '#', '0', '0', '0', '0', '0', '0'],
-    ['0', '0', '#', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0'],
-    ['0', '0', '0', '#', '#', '0', '0', '#', '#', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0'],
-    ['#', '#', '#', '0', '0', '#', '#', '0', '0', '0', '0', '0', '#', '0', '#', '0', '0', '0', '0', '0'],
-    ['0', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-    ['0', '0', '0', '0', '0', '#', '0', '0', '0', '#', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0'],
+    ['S', '0', '0', '0', '0', '#', '0', '0', '0', '0', '2', '0', '0', '0', '0', '0', '0', '#', '0', '0'],
+    ['#', '0', '0', '0', '#', '0', '2', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '3'],
+    ['0', '2', '0', '0', '3', '#', '0', '#', '0', '0', '0', '#', '0', '0', '0', '#', '0', '0', '0', '0'],
+    ['#', '#', '0', '0', '0', '3', '0', '5', '#', '#', '0', '2', '0', '0', '5', '0', '#', '#', '0', '0'],
+    ['0', '0', '0', '0', '5', '0', '0', '#', '0', '3', '0', '0', '0', '0', '0', '#', '0', '#', '0', '0'],
+    ['0', '2', '0', '0', '0', '0', '0', '#', '0', '0', '3', '0', '#', '0', '0', '0', '0', '0', '0', '0'],
+    ['0', '0', '#', '0', '2', '0', '3', '0', '0', '0', '0', '0', '3', '0', '#', '0', '0', '0', '0', '0'],
+    ['0', '3', '0', '0', '#', '#', '0', '0', '#', '#', '0', '0', '0', '3', '0', '0', '0', '0', '0', '0'],
+    ['#', '#', '#', '0', '0', '#', '0', '5', '0', '0', '0', '0', '0', '#', '0', '#', '0', '5', '0', '0'],
+    ['0', '0', '0', '2', '0', '0', '0', '0', '0', '#', '0', '0', '5', '0', '0', '0', '0', '0', '0', '0'],
+    ['0', '0', '5', '0', '#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '2', '0', '0'],
     ['0', '#', '0', '0', '0', '#', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-    ['0', '0', '0', '#', '0', '#', '#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+    ['0', '0', '0', '#', '2', '0', '2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
     ['0', '#', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0'],
-    ['#', '#', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '#', '0', '#'],
-    ['0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0'],
-    ['#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '#'],
-    ['#', '0', '0', '#', '#', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '#', '0'],
-    ['#', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0'],
-    ['0', '0', '0', '0', '#', '0', '0', '0', '0', '#', '#', '0', '0', '0', '0', '#', '#', '0', '0', 'G']
+    ['#', '#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0'],
+    ['0', '0', '5', '0', '0', '#', '0', '0', '0', '0', '0', '#', '0', '0', '3', '0', '0', '0', '0', '0'],
+    ['#', '0', '0', '0', '3', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0', '2', '3', '0', 'G']
 ]
 
 start = (0, 0)
-goal = (19, 19)
+goal = (16, 19)
 
 grid_world = GridWorld(grid, start, goal)
-path = a_star(grid_world)
 
-if path:
-    print("Path found:")
-    print(path)
-    print("Final grid with path:")
-    print_grid(grid_world, path)
-else:
-    print("No path found.")
+# Find path with the least points
+least_points_path = a_star(grid_world, minimize_points=True)
+print("Path with the least points:")
+print_grid(grid_world, least_points_path)
+
+# Find shortest path ignoring points
+shortest_path = a_star(grid_world, minimize_points=False)
+print("\nShortest path (ignoring points):")
+print_grid(grid_world, shortest_path)
