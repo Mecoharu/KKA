@@ -124,13 +124,12 @@ def mutate(path, mutation_rate=0.1):
             new_path[i] = new_move
     return new_path
 
-def print_grid(grid_world, fixed_path_positions):
+def print_grid(grid_world, path):
     grid_copy = [row[:] for row in grid_world.grid]
-    for pos in fixed_path_positions:
+    for pos in path:
         x, y = pos
         if grid_copy[x][y] not in ['S', 'G', '#']:
             grid_copy[x][y] = '*'
-
     for row in grid_copy:
         print(' '.join(str(cell) for cell in row))
 
