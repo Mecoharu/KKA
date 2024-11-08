@@ -73,7 +73,7 @@ def print_grid(grid_world, path):
     for pos in path:
         x, y = pos
         if grid_copy[x][y] not in ['S', 'G', '#']:
-            grid_copy[x][y] = 'X'
+            grid_copy[x][y] = '*'
     for row in grid_copy:
         print(' '.join(str(cell) for cell in row))
 
@@ -106,10 +106,6 @@ goal = (19, 19)
 
 grid_world = GridWorld(grid, start, goal)
 
-# Find path with the least points
-least_points_path = a_star(grid_world, minimize_points=True)
-print("Path with the least points:")
-print_grid(grid_world, least_points_path)
 
 # Find shortest path ignoring points
 shortest_path = a_star(grid_world, minimize_points=False)
