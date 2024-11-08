@@ -29,27 +29,11 @@ In this project, a grid-based environment serves as the testing ground for imple
 Beyond simply finding the shortest path, the grid environment includes collectible points scattered along the paths, which add another layer of complexity to the problem. In this enhanced scenario, the objective is not only to reach the goal efficiently but also to maximize the collection of points along the way, aiming to find the path with the highest point total. The genetic algorithm is especially useful in this context, as it generates and evolves multiple potential paths, selecting the best ones based on fitness criteria that now include both path length and points collected. This hybrid approach demonstrates the adaptability of combining A* and genetic algorithms to balance path efficiency with point maximization, showcasing their suitability for real-world applications where navigation may involve both obstacle avoidance and the collection of valuable items, such as in robotics, search-and-rescue operations, or game design. The grid example visually illustrates how these algorithms can achieve optimal paths that are not only efficient but also reward-maximizing, adding depth to traditional pathfinding scenarios. 
 
 This is the grid when it has points to be searched, with ‘S’ is the starting point, ‘G’ is the goal point, ‘0’ as the path, and ‘#’ as the obstacles:
+![image](https://github.com/user-attachments/assets/8339dd3f-824e-4082-88d2-7be18121c459)
 
-['S', '0', '0', '0', '0', '#', '0', '0', '0', '0', '2', '0', '0', '0', '0', '0', '0', '#', '0', '0']
-['#', '0', '0', '0', '#', '0', '0', '2', '0', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '3']
-['0', '2', '0', '0', '0', '3', '#', '0', '#', '0', '0', '0', '0', '0', '#', '0', '0', '0', '#', '0']
-['#', '#', '0', '0', '0', '3', '0', '#', '#', '2', '0', '0', '5', '#', '#', '0', '2', '0', '0', '0']
-['0', '0', '0', '0', '5', '0', '0', '#', '0', '#', '0', '0', '2', '0', '0', '#', '0', '#', '0', '0']
-['0', '0', '2', '0', '0', '0', '0', '#', '0', '0', '0', '#', '0', '#', '0', '0', '0', '3', '0', '0']
-['0', '0', '#', '0', '2', '0', '#', '0', '0', '0', '0', '3', '0', '0', '#', '0', '0', '0', '0', '0']
-['0', '3', '0', '#', '#', '0', '0', '#', '#', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0']
-['#', '#', '#', '0', '0', '#', '#', '0', '0', '0', '0', '0', '#', '0', '#', '0', '5', '0', '0', '0']
-['0', '0', '0', '2', '0', '0', '0', '0', '0', '#', '5', '0', '0', '0', '0', '0', '0', '0', '0', '0']
-['0', '0', '5', '0', '#', '0', '0', '0', '#', '0', '0', '#', '0', '0', '0', '0', '0', '2', '0', '0']
-['0', '#', '0', '0', '0', '#', '0', '2', '#', '0', '0', '0', '0', '2', '0', '2', '0', '0', '0', '0']
-['0', '0', '0', '#', '0', '#', '#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0']
-['0', '#', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '0']
-['#', '#', '0', '0', '0', '0', '0', '0', '#', '0', '5', '0', '0', '#', '0', '0', '0', '#', '0', '#']
-['0', '0', '5', '0', '0', '0', '0', '#', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0']
-['#', '0', '0', '0', '0', '0', '3', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '0', '0', '#']
-['#', '0', '0', '#', '#', '0', '0', '0', '0', '0', '0', '0', '0', '#', '0', '2', '3', '0', '#', '0']
-['#', '0', '3', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0', '#', '0', '0', '0', '0', '0']
-['0', '0', '0', '0', '#', '0', '0', '0', '0', '#', '#', '0', '2', '0', '0', '#', '#', '0', '0', 'G']
+E. Result
+- A* Algorithm
+The code that implements the A* algorithm to solve a pathfinding problem in a grid environment, aimed to find two types of paths between a start point (`S`) and a goal (`G`): one that minimizes the collection of points along the way and another that finds the shortest path regardless of points. The grid layout includes obstacles (`#`), open cells with or without collectible points (denoted by numbers), a start point, and a goal. When minimizing points, the algorithm treats cells with higher point values as less desirable, seeking a path with the least accumulated points even if the path is longer. Conversely, when finding the shortest path, the algorithm ignores the point values and focuses solely on reaching the goal with the fewest steps, resulting in a more direct route. The output displays the two paths on the grid, marking cells in the path with 'X' to visualize the routes chosen under each criterion. While the path that minimizes points avoids high-point cells, the shortest path prioritizes directness. This demonstrates the flexibility of the A* algorithm in adapting to different objectives, highlighting its efficiency and adaptability in handling multiple pathfinding criteria in a constrained environment. The time taken to compute these paths depends on grid complexity but is typically minimal given the small grid size.
 
-
-
+- Genetic Algorithm
+The algorithm begins with a randomly generated population of paths and iteratively improves them through a process of selection, crossover, and mutation across multiple generations, aiming to find a path with the best fitness. The fitness function favors paths that reach the goal with fewer moves while penalizing unnecessary steps and paths that end far from the goal. The output includes the sequence of moves for the best path, the fixed coordinates visited along this path, and a final display of the grid with the optimal path marked by `X`. While this evolutionary approach offers flexibility in pathfinding, it can be computationally intensive, as its time complexity depends on the grid size, the number of generations, and the population size. Despite potentially longer runtimes compared to deterministic algorithms, this genetic algorithm effectively explores a variety of paths, demonstrating adaptability and efficiency in finding near-optimal solutions in complex, obstacle-filled environments.
